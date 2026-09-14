@@ -1,48 +1,4 @@
-"""
-cryptoapi_bench.py
 
-Adapter bb that converts the CryptoAPI-Bench dataset
-(https://github.com/CryptoGuardOSS/cryptoapi-bench,
-newer 171-case version: https://github.com/CryptoAPI-Bench/CryptoAPI-Bench)
-into a ground-truth file compatible with pqc_scanner.evaluate.
-
-IMPORTANT -- read this before running:
-This adapter was written by inspecting the benchmark's public README and
-paper (Afrose, Rahaman & Yao, 2019), not by downloading the actual
-`CryptoAPI-Bench_details.xlsx` file (this environment has no internet
-access). The benchmark's README states the file "contains the summary of
-secure and nonsecure code and pointed out the vulnerability", but the exact
-column names are not documented publicly. This script therefore:
-
-  1. Scans every cell in the spreadsheet, rather than assuming fixed column
-     names, looking for (a) a cell that looks like a Java filename and
-     (b) keyword hints for which legacy algorithm the row concerns.
-  2. Falls back to scanning the .java source files directly for algorithm
-     keywords if the spreadsheet parse doesn't yield usable rows -- this is
-     less precise (file-level only) but always works.
-
-Because CryptoAPI-Bench is a *misuse* benchmark (it also covers hardcoded
-secrets, certificate validation, weak PRNGs, etc. that are outside this
-project's 10-algorithm scope), this adapter only keeps rows/files that
-relate to one of our target algorithms: RSA, ECC, DSA, DH, ElGamal, RC4,
-DES, 3DES, MD5, SHA-1.
-
-Ground truth here is FILE-LEVEL (no line numbers), since the benchmark is
-organised as one/few small case files per vulnerability rather than
-line-annotated production code. Use `evaluate.py`'s file-level comparison
-mode for this dataset (it auto-detects ground-truth entries with no "line"
-key).
-
-Usage:
-    python -m pqc_scanner.adapters.cryptoapi_bench \\
-        /path/to/cloned/cryptoapi-bench \\
-        --out ground_truth_cryptoapi_bench.json
-
-    # then evaluate:
-    python -m pqc_scanner.evaluate \\
-        /path/to/cloned/cryptoapi-bench/src/main/java/org/cryptoapi/bench \\
-        ground_truth_cryptoapi_bench.json
-"""
 
 import argparse
 import json
@@ -60,7 +16,7 @@ except ImportError:
 log = get_logger("adapters.cryptoapi_bench")
 
 
-# Keyword -> canonical algorithm name (must match pqc_scanner.algorithms_db keys)
+
 _ALGORITHM_KEYWORDS: dict[str, list[str]] = {
     "RSA": [r"\bRSA\b"],
     "ECC": [r"\bECC\b", r"\bEC\b", r"\bECDSA\b", r"\bECDH\b", r"elliptic"],
@@ -80,7 +36,7 @@ _COMPILED_KEYWORDS = {
 
 
 def _match_algorithm(text: str) -> str | None:
-    """Return the first matching canonical algorithm name found in text, if any."""
+
     for algo, patterns in _COMPILED_KEYWORDS.items():
         for pattern in patterns:
             if pattern.search(text):
@@ -89,12 +45,7 @@ def _match_algorithm(text: str) -> str | None:
 
 
 def _rows_from_xlsx(xlsx_path: Path) -> list[dict]:
-    """
-    Best-effort parse of the details spreadsheet. Returns a list of
-    {"file": <java filename found in row>, "algorithm": <matched algo>}
-    for every row where both a filename-like cell and an algorithm keyword
-    were found together.
-    """
+
     if openpyxl is None:
         log.warning("openpyxl is not installed (pip install openpyxl); "
                     "skipping spreadsheet parse, falling back to source-file scan")
@@ -137,11 +88,7 @@ def _rows_from_xlsx(xlsx_path: Path) -> list[dict]:
 
 
 def _fallback_scan_source(java_src_root: Path) -> list[dict]:
-    """
-    Fallback: scan each .java file's own content/filename for algorithm
-    keywords. Less precise than the spreadsheet (no per-row case labels),
-    but requires no spreadsheet parsing at all.
-    """
+
     log.info("Falling back to keyword scan of .java sources under %s", java_src_root)
     entries: list[dict] = []
     scanned = 0
@@ -167,7 +114,7 @@ def build_ground_truth(repo_root: str, out_path: str) -> list[dict]:
     java_src_root = repo_root_path / "src" / "main" / "java" / "org" / "cryptoapi" / "bench"
 
     if not java_src_root.exists():
-        # Newer repo layout may differ; fall back to scanning the whole repo tree.
+
         java_src_root = repo_root_path
 
     entries = _rows_from_xlsx(xlsx_path)
@@ -179,7 +126,7 @@ def build_ground_truth(repo_root: str, out_path: str) -> list[dict]:
     else:
         log.info("Extracted %d row(s) from the spreadsheet", len(entries))
 
-    # De-duplicate
+
     unique = {(e["file"], e["algorithm"]) for e in entries}
     result = [{"file": f, "algorithm": a} for f, a in sorted(unique)]
 

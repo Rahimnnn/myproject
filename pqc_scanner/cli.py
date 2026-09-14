@@ -1,29 +1,4 @@
-"""
-cli.py
 
-Command-line entry point tying the scanner, recommender, and report
-generator together, with an optional LLM-driven replacement pass.
-
-Usage:
-    python -m pqc_scanner.cli <path-to-file-or-directory> [--out-prefix report]
-                             [--replace] [--dry-run] [--model MODEL]
-                             [--api-key KEY] [--no-backup] [--verify-cmd CMD]
-                             [-v | -vv | --quiet] [--log-file PATH] [--log-json]
-
-Produces <out-prefix>.json and <out-prefix>.pdf in the current directory.
-
-Progress is logged to stderr as the run proceeds — one line per file scanned,
-with `-v` for detector internals and `-vv` for every individual match. stdout
-carries only the final summary, so it stays pipeable. `--log-file` keeps a
-full DEBUG transcript of the run regardless of the console verbosity, which is
-what you want when a scan is part of a CI job or an audit trail.
-
-By default the tool only *detects and recommends* — it runs fully offline and
-never touches your source files. Passing --replace additionally rewrites every
-affected file in one coordinated, project-aware pass (see rewriter.py); this
-requires the `anthropic` package and an ANTHROPIC_API_KEY. Use --dry-run to
-preview the migration (and its token cost) without changing anything.
-"""
 
 import argparse
 import sys

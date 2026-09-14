@@ -1,34 +1,4 @@
-"""
-rewriter.py
 
-Optional LLM-driven code *replacement* (as opposed to the text-only
-recommendation produced by `recommender.py`).
-
-Unlike a naive per-file rewrite, this migrates the whole project in a single,
-**project-aware** call: every affected file is sent together so the model can
-keep cross-file dependencies consistent (shared helper signatures, imports,
-serialised formats, and the choice of PQC library). The batch is then applied
-and validated atomically — if validation fails, every file is rolled back from
-its `.bak`.
-
-This capability is strictly opt-in: it is only reached via the CLI's
-`--replace` flag. The default scan/recommend/report pipeline never imports
-`anthropic` at runtime (the import here is deferred), so the tool stays
-offline-only unless replacement is explicitly requested.
-
-Safety model (see also `System.md` §5.5):
-  - `--dry-run` performs the migration call and reports the proposed diffs and
-    token cost, but writes nothing.
-  - Otherwise each original is copied to `<file>.bak` before it is overwritten
-    (unless `--no-backup`).
-  - After applying, rewritten files are validated (Python syntax by default,
-    plus an optional `--verify-cmd` such as a test command). On failure the
-    entire batch is reverted from the backups.
-  - Each rewritten file is also re-scanned with the existing detectors; a file
-    is `verified` only when none of its targeted algorithms remain.
-  - Every rewrite is a *suggested* migration requiring cryptographic review;
-    PQC swaps are frequently not behaviour-preserving.
-"""
 
 import difflib
 import subprocess
@@ -45,7 +15,7 @@ log = get_logger(__name__)
 
 DEFAULT_MODEL = "claude-opus-4-8"
 
-# Opus 4.8 pricing, USD per token (input $5 / output $25 per 1M).
+
 _INPUT_COST_PER_TOKEN = 5.0 / 1_000_000
 _OUTPUT_COST_PER_TOKEN = 25.0 / 1_000_000
 
@@ -112,7 +82,7 @@ _PROJECT_TOOL = {
 
 
 class RewriteUnavailable(RuntimeError):
-    """Raised when the LLM path cannot run (missing dependency or credentials)."""
+
 
 
 def _make_client(api_key: str | None):
@@ -203,7 +173,7 @@ def _extract_tool_input(response) -> dict:
 
 
 def _call_model(client, model: str, files: list[dict]):
-    """Single project-aware, streamed migration call. Returns (payload, usage)."""
+
     prompt = _build_project_prompt(files)
     log.info("Requesting project migration from %s: %d file(s), prompt %s",
              model, len(files), format_bytes(len(prompt.encode("utf-8"))))
@@ -230,7 +200,7 @@ def _call_model(client, model: str, files: list[dict]):
 
 
 def _validate_python_syntax(paths: list[Path]) -> str:
-    """Compile each rewritten .py file. Returns '' on success, else an error string."""
+
     py_files = [p for p in paths if p.suffix in PYTHON_EXTENSIONS]
     if not py_files:
         log.debug("No Python files among the rewrites; skipping syntax check")
@@ -248,7 +218,7 @@ def _validate_python_syntax(paths: list[Path]) -> str:
 
 
 def _run_verify_cmd(verify_cmd: str) -> str:
-    """Run a user-supplied validation command. Returns '' on success, else an error."""
+
     log.info("Running verification command: %s", verify_cmd)
     started = time.perf_counter()
     proc = subprocess.run(verify_cmd, shell=True, capture_output=True, text=True)
@@ -270,19 +240,14 @@ def apply_rewrites(
     dry_run: bool = False,
     verify_cmd: str | None = None,
 ) -> ReplacementRun:
-    """
-    Migrate every affected file in one coordinated LLM call, then (unless
-    dry-run) apply and validate the batch atomically, rolling back all files
-    on validation failure. Raises RewriteUnavailable only if the client cannot
-    be created or the model returns no migration; per-file issues are reported.
-    """
+
     log.info("Starting %s of %d finding(s) with model %s",
              "DRY RUN migration" if dry_run else "migration",
              len(scan_result.findings), model)
     client = _make_client(api_key)
     run = ReplacementRun(dry_run=dry_run)
 
-    # Gather the affected files.
+
     files: list[dict] = []
     read_errors: list[CodeRewrite] = []
     for file_path, findings in scan_result.by_file().items():
@@ -442,7 +407,7 @@ def apply_rewrites(
             )
         return run
 
-    # Validation passed — re-scan each written file to verify the legacy algo is gone.
+
     run.validation_summary = "Validation passed."
     if verify_cmd:
         run.validation_summary = "Validation passed (syntax + verify command)."

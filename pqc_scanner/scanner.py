@@ -1,17 +1,4 @@
-"""
-scanner.py
 
-Orchestrates the hybrid regex + AST detection pipeline (Objective 2 of the
-proposal). For Python files: regex provides fast candidate matches, and the
-AST pass confirms/refines them, boosting confidence and suppressing matches
-that regex flagged inside comments or unrelated strings. For Java and C files:
-regex is the primary method in this prototype (see java_detector.py and
-c_detector.py).
-
-Progress is reported through the `pqc_scanner.scanner` logger: one INFO line
-per file scanned, DEBUG for how the two passes agreed, and TRACE for every
-individual finding. See `logging_setup.py`.
-"""
 
 import logging
 import time
@@ -28,7 +15,7 @@ JAVA_EXTENSIONS = {".java"}
 C_EXTENSIONS = {".c", ".h"}
 SUPPORTED_EXTENSIONS = PYTHON_EXTENSIONS | JAVA_EXTENSIONS | C_EXTENSIONS
 
-# How often to emit a running progress line during a large directory scan.
+
 _PROGRESS_EVERY = 25
 
 
@@ -68,12 +55,11 @@ def _scan_python_file(path: Path, source: str) -> list[Finding]:
 
     ast_by_line = {(m.algorithm, m.line_number) for m in ast_matches}
 
-    # Confirmed by both regex and AST -> high confidence
+
     confirmed = regex_by_line & ast_by_line
-    # AST-only (e.g. aliased imports regex missed) -> high confidence
+
     ast_only = ast_by_line - regex_by_line
-    # Regex-only (AST parse failed, or pattern regex catches that AST class
-    # doesn't model, e.g. string-based Cipher.getInstance) -> medium confidence
+
     regex_only = regex_by_line - ast_by_line
 
     log.debug("  python passes on %s: regex=%d ast=%d -> confirmed=%d "
@@ -160,7 +146,7 @@ def scan_file(path: Path) -> list[Finding]:
 
 
 def _collect_candidates(root: Path) -> list[Path]:
-    """Walk the tree, collecting every file with a supported extension."""
+
     candidates: list[Path] = []
     seen = 0
     walk_started = time.perf_counter()
@@ -179,10 +165,7 @@ def _collect_candidates(root: Path) -> list[Path]:
 
 
 def scan_path(target: str) -> ScanResult:
-    """
-    Scan a single file or a directory tree (recursively) for legacy
-    cryptographic algorithm usage.
-    """
+
     result = ScanResult()
     root = Path(target)
     started = time.perf_counter()

@@ -1,25 +1,4 @@
-"""
-logging_setup.py
 
-Central logging configuration for the whole tool.
-
-Every module logs through the standard library `logging` package under the
-`pqc_scanner.*` namespace and never prints diagnostics itself. The CLI calls
-`configure_logging()` once at start-up to decide where those records go; any
-other caller (the test suite, the evaluation harness, a library import) gets a
-silent logger, because the package logger carries only a `NullHandler` until
-something asks for more.
-
-Console records go to **stderr** so stdout stays reserved for the report
-summary and can be piped or redirected without log noise mixed in.
-
-Levels used by this project:
-  TRACE (5)  per-pattern / per-finding detail — every individual match
-  DEBUG      detector internals, timings, cross-checks between passes
-  INFO       one line per file scanned, stage banners, run summary
-  WARNING    recoverable problems (unreadable file, AST parse failure)
-  ERROR      failures that change the outcome (rollback, missing credentials)
-"""
 
 import json
 import logging
@@ -57,18 +36,14 @@ logging.getLogger(LOGGER_NAME).addHandler(logging.NullHandler())
 
 
 def get_logger(name: str) -> logging.Logger:
-    """Return the logger for a module inside the package.
 
-    Call as `get_logger(__name__)`; names already inside the package namespace
-    are used as-is, anything else is nested under it.
-    """
     if name == LOGGER_NAME or name.startswith(LOGGER_NAME + "."):
         return logging.getLogger(name)
     return logging.getLogger(f"{LOGGER_NAME}.{name}")
 
 
 class _ConsoleFormatter(logging.Formatter):
-    """Human-readable, column-aligned console format with optional colour."""
+
 
     def __init__(self, color: bool) -> None:
         super().__init__(datefmt="%H:%M:%S")
@@ -95,7 +70,7 @@ class _ConsoleFormatter(logging.Formatter):
 
 
 class _JsonFormatter(logging.Formatter):
-    """One JSON object per line, for ingestion by a log pipeline."""
+
 
     def format(self, record: logging.LogRecord) -> str:
         payload = {
@@ -124,11 +99,7 @@ def _supports_color(stream) -> bool:
 
 
 def _enable_windows_vt() -> bool:
-    """Turn on ANSI escape processing for the Windows console.
 
-    Windows Terminal and recent conhost support it, but it stays off for
-    processes that do not explicitly request it.
-    """
     try:
         import ctypes
 
@@ -149,15 +120,7 @@ def configure_logging(
     json_logs: bool = False,
     color: bool | None = None,
 ) -> logging.Logger:
-    """
-    Install the console (and optional file) handlers and return the package
-    logger. Safe to call more than once — existing handlers are replaced
-    rather than stacked.
 
-    verbosity: 0 = INFO, 1 = DEBUG, 2+ = TRACE. `quiet` overrides it and
-    raises the console to WARNING so only problems are reported. A `log_file`
-    always records at DEBUG or finer, whatever the console shows.
-    """
     console_level = logging.WARNING if quiet else _CONSOLE_LEVELS.get(
         min(verbosity, 2), TRACE
     )

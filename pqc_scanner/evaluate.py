@@ -1,19 +1,4 @@
-"""
-evaluate.py
 
-Evaluation harness for Objective 4: computes precision, recall, and F1-score
-against a manually labelled ground-truth file.
-
-Ground truth format (JSON):
-[
-  {"file": "samples/legacy_auth.py", "line": 11, "algorithm": "RSA"},
-  {"file": "samples/legacy_auth.py", "line": 16, "algorithm": "MD5"},
-  ...
-]
-
-Usage:
-    python -m pqc_scanner.evaluate <scan-target> <ground_truth.json>
-"""
 
 import argparse
 import json
@@ -27,18 +12,12 @@ log = get_logger("evaluate")
 
 
 def _ground_truth_is_line_level(entries: list[dict]) -> bool:
-    """Line-level datasets (our own hand-labelled samples) include a 'line'
-    key on every entry. File-level datasets (e.g. CryptoAPI-Bench, where
-    ground truth is per test-case file rather than per line) omit it."""
+
     return bool(entries) and all("line" in e for e in entries)
 
 
 def load_ground_truth(path: str) -> tuple[set, bool]:
-    """
-    Returns (truth_set, is_line_level).
-    Line-level: set of (file, line, ALGORITHM).
-    File-level: set of (file, ALGORITHM).
-    """
+
     data = json.loads(open(path, encoding="utf-8").read())
     if _ground_truth_is_line_level(data):
         return (
@@ -52,10 +31,7 @@ def load_ground_truth(path: str) -> tuple[set, bool]:
 
 
 def _normalize_path(path_str: str) -> str:
-    """Compare paths by filename + immediate parent only, so ground-truth
-    entries recorded with a different path prefix than the local scan
-    target still match (useful when the dataset was labelled on a
-    different machine or a different clone location)."""
+
     p = Path(path_str)
     return str(Path(p.parent.name) / p.name) if p.parent.name else p.name
 

@@ -1,18 +1,4 @@
-"""
-algorithms_db.py
 
-Taxonomy of the ten legacy cryptographic algorithms targeted by this project,
-mapped to their NIST-standardised post-quantum (or otherwise recommended)
-replacements. This module implements Objective 1 of the proposal.
-
-Each entry contains:
-  - category: the cryptographic purpose the algorithm serves
-  - quantum_threat: which quantum algorithm breaks/weakens it
-  - severity: qualitative urgency rating used in report generation
-  - pqc_alternative: the NIST-recommended replacement
-  - standard: the relevant FIPS / IETF / NIST reference
-  - rationale: short human-readable migration justification
-"""
 
 from dataclasses import dataclass
 from enum import Enum
@@ -35,7 +21,7 @@ class AlgorithmProfile:
     rationale: str
 
 
-# Central taxonomy: 10 legacy algorithms -> PQC alternatives
+
 ALGORITHM_TAXONOMY: dict[str, AlgorithmProfile] = {
     "RSA": AlgorithmProfile(
         name="RSA",
@@ -141,7 +127,7 @@ ALGORITHM_TAXONOMY: dict[str, AlgorithmProfile] = {
 
 
 def get_profile(algorithm_name: str) -> AlgorithmProfile | None:
-    """Look up an algorithm profile by canonical name (case-insensitive)."""
+
     key_map = {k.upper(): k for k in ALGORITHM_TAXONOMY}
     key = key_map.get(algorithm_name.upper())
     return ALGORITHM_TAXONOMY.get(key) if key else None

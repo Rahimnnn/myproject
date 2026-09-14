@@ -1,11 +1,4 @@
-"""
-recommender.py
 
-Recommendation engine (Objective 3). Takes a ScanResult and produces a
-structured security assessment: for every detected algorithm, the
-NIST-standardised post-quantum alternative, severity, and migration
-rationale, plus an overall risk summary.
-"""
 
 from dataclasses import dataclass, field
 
@@ -79,7 +72,7 @@ def build_assessment(scan_result: ScanResult) -> SecurityAssessmentReport:
                   profile.severity.value, algo, len(findings), len(files_affected),
                   avg_conf, profile.pqc_alternative, profile.standard)
 
-    # Sort by severity (Critical first), then by occurrence count descending
+
     assessments.sort(
         key=lambda a: (_SEVERITY_ORDER.get(Severity(a.severity), 99), -a.occurrences)
     )

@@ -1,9 +1,3 @@
-"""
-report_generator.py
-
-Generates the structured security assessment report in JSON and PDF formats
-(Objective 3, Week 8 deliverable).
-"""
 
 import json
 import time
@@ -33,7 +27,7 @@ _SEVERITY_COLORS = {
 
 
 def _esc(text: str) -> str:
-    """Escape text for reportlab Paragraph markup (which is XML-like)."""
+
     return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
@@ -42,7 +36,7 @@ def to_json(
     target_path: str | None = None,
     replacement: ReplacementRun | None = None,
 ) -> str:
-    """Serialise the report to JSON. Returns the JSON string; optionally writes to disk."""
+
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "files_scanned": report.files_scanned,
@@ -79,7 +73,7 @@ def to_pdf(
     scan_target: str = "",
     replacement: ReplacementRun | None = None,
 ) -> None:
-    """Render the report as a formatted PDF security assessment document."""
+
     started = time.perf_counter()
     log.debug("Rendering PDF report to %s (%d algorithm section(s)%s)",
               target_path, len(report.algorithms_detected),
@@ -103,7 +97,7 @@ def to_pdf(
     ))
     story.append(Spacer(1, 12))
 
-    # Summary table
+
     story.append(Paragraph("Executive Summary", h2))
     summary_data = [
         ["Files scanned", str(report.files_scanned)],
