@@ -1,7 +1,7 @@
 """
 cryptoapi_bench.py
 
-Adapter that converts the CryptoAPI-Bench dataset
+Adapter bb that converts the CryptoAPI-Bench dataset
 (https://github.com/CryptoGuardOSS/cryptoapi-bench,
 newer 171-case version: https://github.com/CryptoAPI-Bench/CryptoAPI-Bench)
 into a ground-truth file compatible with pqc_scanner.evaluate.
