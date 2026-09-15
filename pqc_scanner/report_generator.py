@@ -177,9 +177,7 @@ def to_pdf(
 
         meta = [
             ["Validation", _cell(replacement.validation_summary or "-")],
-            ["Estimated cost", _cell(
-                f"${replacement.estimated_cost_usd:.4f} "
-                f"({replacement.input_tokens} in / {replacement.output_tokens} out tokens)")],
+
         ]
         if replacement.cross_file_notes:
             meta.append(["Cross-file coordination", _cell(replacement.cross_file_notes)])

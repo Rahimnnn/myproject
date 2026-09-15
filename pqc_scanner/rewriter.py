@@ -82,8 +82,7 @@ _PROJECT_TOOL = {
 
 
 class RewriteUnavailable(RuntimeError):
-
-
+    pass
 
 def _make_client(api_key: str | None):
     log.debug("Initialising Anthropic client (key source: %s)",
