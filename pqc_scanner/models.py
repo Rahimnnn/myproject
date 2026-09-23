@@ -10,9 +10,9 @@ class Finding:
     file_path: str
     line_number: int
     code_snippet: str
-    detection_method: str   # "regex" or "ast" or "regex+ast"
-    confidence: float       # 0.0 - 1.0
-    language: str           # "python", "java", or "c"
+    detection_method: str   
+    confidence: float       
+    language: str           
 
 
 @dataclass
@@ -43,8 +43,8 @@ class CodeRewrite:
     algorithms_addressed: list[str]
     changes_summary: str
     caveats: str
-    confidence: str            # "high" | "medium" | "low"
-    modified: bool             # True only if the file was actually overwritten (and kept)
+    confidence: str            
+    modified: bool             
     verified: bool
     remaining_algorithms: list[str]
     backup_path: str | None
